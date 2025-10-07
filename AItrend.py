@@ -142,6 +142,89 @@ if st.button("Fetch Trends"):
             plt.xticks(rotation=45)
             st.pyplot(plt)
             
+            # -----------------------------
+            # Data Summary & Analysis
+            # -----------------------------
+            st.write("### 📊 Data Summary & Insights")
+            
+            # Calculate summary statistics
+            for keyword in keywords:
+                if keyword in data.columns:
+                    col_data = data[keyword]
+                    
+                    # Basic stats
+                    max_value = col_data.max()
+                    min_value = col_data.min()
+                    avg_value = col_data.mean()
+                    latest_value = col_data.iloc[-1]
+                    
+                    # Find peak date
+                    peak_date = col_data.idxmax().strftime('%B %Y')
+                    
+                    # Calculate trend direction (last 6 months vs previous 6 months)
+                    recent_avg = col_data.tail(6).mean()
+                    previous_avg = col_data.tail(12).head(6).mean()
+                    
+                    if recent_avg > previous_avg * 1.1:
+                        trend_direction = "📈 **Trending UP**"
+                        trend_color = "green"
+                    elif recent_avg < previous_avg * 0.9:
+                        trend_direction = "📉 **Trending DOWN**"  
+                        trend_color = "red"
+                    else:
+                        trend_direction = "➡️ **Stable**"
+                        trend_color = "blue"
+                    
+                    # Display summary for each keyword
+                    with st.expander(f"🔍 **{keyword}** Analysis"):
+                        col1, col2, col3 = st.columns(3)
+                        
+                        with col1:
+                            st.metric("Peak Interest", f"{max_value:.0f}", f"in {peak_date}")
+                            st.metric("Current Interest", f"{latest_value:.0f}")
+                        
+                        with col2:
+                            st.metric("Average Interest", f"{avg_value:.1f}")
+                            st.metric("Lowest Point", f"{min_value:.0f}")
+                        
+                        with col3:
+                            st.markdown(f"**Trend Direction:**")
+                            st.markdown(f"<span style='color:{trend_color}'>{trend_direction}</span>", unsafe_allow_html=True)
+                        
+                        # Insights
+                        st.write("**💡 Key Insights:**")
+                        if max_value == latest_value:
+                            st.write(f"• **{keyword}** is currently at its peak interest!")
+                        elif latest_value > avg_value:
+                            st.write(f"• **{keyword}** is above average interest ({latest_value:.0f} vs {avg_value:.1f})")
+                        else:
+                            st.write(f"• **{keyword}** is below average interest ({latest_value:.0f} vs {avg_value:.1f})")
+                        
+                        if recent_avg > previous_avg * 1.2:
+                            st.write(f"• Strong upward trend - interest increased {((recent_avg/previous_avg-1)*100):.0f}% recently")
+                        elif recent_avg < previous_avg * 0.8:
+                            st.write(f"• Declining interest - dropped {((1-recent_avg/previous_avg)*100):.0f}% recently")
+                        
+            # Overall comparison if multiple keywords
+            if len(keywords) > 1:
+                st.write("### 🏆 Keyword Comparison")
+                
+                # Find most popular overall
+                keyword_averages = {}
+                for keyword in keywords:
+                    if keyword in data.columns:
+                        keyword_averages[keyword] = data[keyword].mean()
+                
+                if keyword_averages:
+                    most_popular = max(keyword_averages, key=keyword_averages.get)
+                    least_popular = min(keyword_averages, key=keyword_averages.get)
+                    
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.success(f"🥇 **Most Popular:** {most_popular} (avg: {keyword_averages[most_popular]:.1f})")
+                    with col2:
+                        st.info(f"📊 **Least Popular:** {least_popular} (avg: {keyword_averages[least_popular]:.1f})")
+            
     except exceptions.TooManyRequestsError:
         st.error("⚠️ Too many requests to Google Trends. Please wait 5-10 minutes before trying again.")
         st.info("💡 Tips to avoid rate limits:")
