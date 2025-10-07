@@ -24,3 +24,9 @@ python -m streamlit run AItrend.py
 - 🌍 Regional trend analysis
 - 📊 Interactive graphs
 - ⏱️ Historical data (1-10 years)
+
+## Deploy to Streamlit Cloud
+1. Push your code to GitHub
+2. Go to [share.streamlit.io](https://share.streamlit.io)
+3. Connect your GitHub repo
+4. The `requirements.txt` file will automatically install dependencies
